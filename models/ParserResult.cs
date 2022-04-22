@@ -8,7 +8,8 @@ namespace baseLevel1.models
 {
     class ParserResult
     {
-        public string code { get; set; }
+        public int code { get; set; }
         public string message { get; set; }
+        public string text { get; set; }
     }
 }

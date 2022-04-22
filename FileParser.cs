@@ -1,4 +1,5 @@
 ﻿using Aspose.Words;
+using baseLevel1.models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,50 +10,84 @@ namespace baseLevel1
 {
     public class FileParser
     {
-        public string parseFile(Document doc)
+        public ParserResult parseFile(Document doc)
         {
-            string text = "";
+            ParserResult result;
             try
             {
-               
-                
+                List<Node> hfList = new List<Node>();
+                List<Node> footNoteList = new List<Node>();
+                List<Node> firstPharagaraphs = new List<Node>();
 
-                //var doc = new Document(_basePathFileWord);
-                DocumentBuilder builder = new DocumentBuilder(doc);
+                //все сноски в документе
+                footNoteList.AddRange(doc.GetChildNodes(NodeType.Footnote, true).ToList());
 
-                NodeCollection paragraphs = doc.FirstSection.Body.GetChildNodes(NodeType.Paragraph, true);
-
-                List<HeaderFooter> hfList = new List<HeaderFooter>();
                 foreach (Section section in doc.Sections)
-                {                   
-                    HeaderFooter hf;
-                    hf = section.HeadersFooters[HeaderFooterType.HeaderPrimary];
-                    
-                    //var tr = hf.First();
+                {
+                    //Все колонтитулы в секции
+                    hfList.AddRange(section.HeadersFooters.ToList());
 
+                    //Первый параграф каждой секции
+                    firstPharagaraphs.Add(section.GetChildNodes(NodeType.Paragraph, true).First());
+                }
 
-                    var t2 = section.HeadersFooters.First().ToString(SaveFormat.Text);
-                    var t1 = section.HeadersFooters.Last().ToString(SaveFormat.Text);
-                    var t3 = paragraphs.First().ToString(SaveFormat.Text);
-                    
-
-                    foreach (Paragraph para in doc.GetChildNodes(NodeType.Paragraph, true))
-                        Console.WriteLine(para.ToString(SaveFormat.Text));
-                    
-
-                    foreach (Run run in doc.GetChildNodes(NodeType.Run, true))
+                result = new ParserResult();
+                if (hfList != null && hfList.Count() > 0)
+                {
+                    result.code = 0;
+                    result.message = "document contains headers and footers!";
+                    result.text = formatterText(hfList);
+                }
+                else
+                {
+                    if (footNoteList != null && footNoteList.Count() > 0)
                     {
-                        Font font = run.Font;
-                        Console.WriteLine(font.Name + "," + font.Size.ToString());
-                        Console.WriteLine(run.Text);
+                        result.code = 0;
+                        result.message = "document doesn't contain headers and footers, but contain footnodes!";
+                        result.text = formatterText(footNoteList);
+                    }
+                    else
+                    {
+                        if (firstPharagaraphs != null && firstPharagaraphs.Count() > 0)
+                        {
+                            result.code = 0;
+                            result.message = "document doesn't contain headers/footers and footnodes, but contain pharagaraphs!";
+                            result.text = formatterText(firstPharagaraphs);
+                        }
+                        else
+                        {
+                            result.code = 1;
+                            result.message = "document doesn't contain headers/footers, footnodes and also pharagaraphs!";
+                            result.text = null;
+                        }
                     }
                 }
-            }
-            catch(Exception ex)
-            {
+
+                return result;
 
             }
-            return text;
+            catch (Exception ex)
+            {
+                return new ParserResult() { code = -1, message = ex.Message, text = null };
+            }
         }
+
+        public string formatterText(List<Node> nodes)
+        {
+            try
+            {
+                string text = "";
+                foreach(var node in nodes)
+                {
+                    text += node.GetText()+"\n\n";
+                }
+                return text;
+            }
+            catch (Exception ex)
+            {
+                throw (new Exception("unable to read text: " + ex.Message));
+            }
+        }
+
     }
 }
