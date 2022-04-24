@@ -10,9 +10,9 @@ namespace baseLevel1
 {
     public class FileParser
     {
-        public ParserResult parseFile(Document doc)
+        public MethodResult parseFile(Document doc)
         {
-            ParserResult result;
+            MethodResult result;
             try
             {
                 List<Node> hfList = new List<Node>();
@@ -31,7 +31,7 @@ namespace baseLevel1
                     firstPharagaraphs.Add(section.GetChildNodes(NodeType.Paragraph, true).First());
                 }
 
-                result = new ParserResult();
+                result = new MethodResult();
                 if (hfList != null && hfList.Count() > 0)
                 {
                     result.code = 0;
@@ -68,7 +68,7 @@ namespace baseLevel1
             }
             catch (Exception ex)
             {
-                return new ParserResult() { code = -1, message = ex.Message, text = null };
+                return new MethodResult() { code = -1, message = ex.Message, text = null };
             }
         }
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace baseLevel1.models
 {
-    class ParserResult
+    public class MethodResult
     {
         public int code { get; set; }
         public string message { get; set; }

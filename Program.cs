@@ -18,9 +18,14 @@ namespace baseLevel1
             {
                 doc = new Document(stream);
             }
+
+            Translator translator = new Translator();
+            var t = translator.translateText("hello", "ru", "en");
+            
+
             string text1 = doc.GetText();
             FileParser fp = new FileParser();
-            string text = fp.parseFile(doc);
+            //string text = fp.parseFile(doc);
         }
 
 
