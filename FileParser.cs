@@ -2,19 +2,27 @@
 using baseLevel1.models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace baseLevel1
 {
     public class FileParser
     {
-        public MethodResult parseFile(Document doc)
+        public MethodResult parseFile(string fileName)
         {
             MethodResult result;
             try
             {
+                string dir = Directory.GetCurrentDirectory();
+                Document doc;
+
+                using (Stream stream = File.OpenRead(dir + "\\" + fileName + ".docx"))
+                {
+                    doc = new Document(stream);
+                }
+
+
                 List<Node> hfList = new List<Node>();
                 List<Node> footNoteList = new List<Node>();
                 List<Node> firstPharagaraphs = new List<Node>();
@@ -68,7 +76,7 @@ namespace baseLevel1
             }
             catch (Exception ex)
             {
-                return new MethodResult() { code = -1, message = ex.Message, text = null };
+                return new MethodResult() { code = -1, message = "can`t parse file, error: " + ex.Message, text = null };
             }
         }
 
@@ -77,9 +85,9 @@ namespace baseLevel1
             try
             {
                 string text = "";
-                foreach(var node in nodes)
+                foreach (var node in nodes)
                 {
-                    text += node.GetText()+"\n\n";
+                    text += node.GetText() + "\n\n";
                 }
                 return text;
             }

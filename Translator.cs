@@ -1,41 +1,32 @@
-﻿using System;
-using baseLevel1.models;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Google.Cloud.Translation.V2;
-using System.Net;
-using System.Web;
-using Microsoft.IdentityModel.Tokens;
-using RestSharp;
-using System.Net.Http;
+﻿using baseLevel1.models;
+using Newtonsoft.Json;
+using System;
 using System.IO;
+using System.Net;
 
 namespace baseLevel1
 {
     public class Translator
     {
+        //сделал отдельный метод, потому что может несколько функций вызываться(проверка текста, проверка языка итд). 
         public MethodResult translateText(string text, string ln1, string ln2)
         {
             MethodResult mr = new MethodResult();
             try
             {
-                
-                MethodResult checkResult = checkText(text, ln1);
+                //проверка текста на корректность, закоментировал потому что API чуть странно работает))
+                //MethodResult checkResult = checkText(text, ln1);
+                MethodResult translateResult = translate(text, ln1, ln2);
 
-                MethodResult translateResult = translate(text,ln1, ln2);
-
-
-
-
-
+                return translateResult;
             }
             catch (Exception ex)
             {
-
+                mr.code = -1;
+                mr.message = "can`t translate text, error: " + ex.Message;
+                mr.text = null;
             }
-            
+
             return mr;
         }
 
@@ -50,27 +41,51 @@ namespace baseLevel1
                 text = "q=" + text;
                 string response = SendRequest(text, addr);
 
-                
+
                 mr.text = response;
                 mr.message = "success";
                 mr.code = 0;
             }
             catch (Exception ex)
             {
-                mr.text = null;
-                mr.message = ex.Message;
-                mr.code = -1;
+                throw (new Exception(ex.Message));
+                //mr.text = null;
+                //mr.message = ex.Message;
+                //mr.code = -1;
             }
             return mr;
         }
 
         public MethodResult translate(string text, string fromText, string toText)
         {
-            MethodResult mr = new MethodResult();
+            try
+            {
+                MethodResult mr = new MethodResult();
 
-            string addr = "https://google-translate1.p.rapidapi.com/language/translate/v2";
-            var content = "q=" + text + "&target=" + fromText + "&source=" + toText;
-            return mr;
+                string addr = "https://google-translate1.p.rapidapi.com/language/translate/v2";
+                var content = "q=" + text + "&target=" + fromText + "&source=" + toText;
+                var res = SendRequest(content, addr);
+                TransatorApiResult jsonResult = new TransatorApiResult();
+                //parse json
+                jsonResult = JsonConvert.DeserializeObject<TransatorApiResult>(res);
+                if (jsonResult != null)
+                {
+                    mr.text = jsonResult.data.translations[0].translatedText;
+                    mr.code = 0;
+                    mr.message = "success";
+                }
+                else
+                {
+                    mr.text = "";
+                    mr.code = 1;
+                    mr.message = "object is null";
+                }
+                return mr;
+            }
+            catch (Exception ex)
+            {
+                throw (new Exception(ex.Message));
+            }
         }
 
         private string SendRequest(string body, string addr)
@@ -112,12 +127,10 @@ namespace baseLevel1
             }
             catch (Exception ex)
             {
-                throw new Exception("Не удалось выполнить запрос к API переводчика, ошибка: " + ex.Message);
+                throw new Exception("can`t send request to API translator, error: " + ex.Message);
             }
-           
+
             return resp;
         }
-
-
     }
 }
