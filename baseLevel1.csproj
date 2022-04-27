@@ -125,6 +125,10 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="testFiles\Doc1_footerHeaders.docx" />
+    <None Include="testFiles\Doc1_footnodes.docx" />
+    <None Include="testFiles\Doc1_pharagraph.docx" />
+    <None Include="описание.docx" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
